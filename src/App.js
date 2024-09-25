@@ -1,39 +1,42 @@
 import React, { useState } from 'react';
 import { DndContext, useDraggable, useDroppable, rectIntersection } from '@dnd-kit/core';
+import './styles.css'; // 假设您有一个 CSS 文件用于样式
 
 // DraggableItem 组件
-const DraggableItem = ({ id, initialPosition, color, isOver, isDragging }) => {
+const DraggableItem = ({ id, color, isOver, isDragging }) => {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id });
 
   const style = {
     transform: `translate3d(${(transform?.x || 0)}px, ${(transform?.y || 0)}px, 0)`,
-    width: 100,
-    height: 100,
-    backgroundColor: isOver ? 'yellow' : color, // 碰撞時變色
-    position: 'absolute',
-    zIndex: isDragging ? 10 : 1, // 拖動時 zIndex 提升
-    cursor: 'grab',
+    zIndex: isDragging ? 1 : 10, // 拖动时 z-index 为最低
+    backgroundColor: isOver ? 'yellow' : color,
   };
 
   return (
-    <div ref={setNodeRef} {...listeners} {...attributes} style={style}>
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      className="draggable-item"
+      style={style}
+    >
       {id}
     </div>
   );
 };
 
 // DroppableArea 组件
-const DroppableArea = ({ id, initialPosition, color, children }) => {
-  const { setNodeRef, isOver } = useDroppable({ id });
+const DroppableArea = ({ id, children, position, isOver }) => {
+  const { setNodeRef } = useDroppable({ id });
 
   const style = {
-    width: 100,
-    height: 100,
-    backgroundColor: isOver ? 'gray' : color, // 当物件拖到这里时显示影子
     position: 'absolute',
-    top: initialPosition.y,
-    left: initialPosition.x,
-    opacity: 0.3, // 影子效果的透明度
+    top: position.y,
+    left: position.x,
+    width: '100px',
+    height: '100px',
+    backgroundColor: isOver ? 'rgba(128,128,128,0.5)' : 'transparent', // 当物件拖到这里时显示影子
+    border: isOver ? '2px dashed gray' : 'none', // 显示占位符边框
   };
 
   return (
@@ -44,45 +47,48 @@ const DroppableArea = ({ id, initialPosition, color, children }) => {
 };
 
 const App = () => {
-  const [items, setItems] = useState([
-    { id: 'item1', initialPosition: { x: 50, y: 200 }, color: 'lightblue' },
-    { id: 'item2', initialPosition: { x: 300, y: 200 }, color: 'lightcoral' },
+  const [items] = useState([
+    { id: 'item1', color: 'lightblue', position: { x: 50, y: 200 } }, // 左侧物体
+    { id: 'item2', color: 'lightcoral', position: { x: 300, y: 200 } }, // 右侧物体
   ]);
-  const [overlappingItem, setOverlappingItem] = useState(null); // 用来追踪碰撞物件
+  
+  const [overlappingItem, setOverlappingItem] = useState(null);
 
   const handleDragOver = (event) => {
     const { active, over } = event;
 
-    // 檢測拖動物件是否與其他物件相交
     if (over && active.id !== over.id) {
-      setOverlappingItem(over.id); // 紀錄相交的物件 ID
+      setOverlappingItem(over.id);
     } else {
-      setOverlappingItem(null); // 沒有相交時清空
+      setOverlappingItem(null);
     }
   };
 
   const handleDragEnd = (event) => {
-    // 处理拖动结束后的逻辑（例如更新位置等）
     console.log('Drag ended:', event);
+    setOverlappingItem(null); // 拖动结束后重置重叠状态
   };
 
   return (
     <DndContext onDragEnd={handleDragEnd} onDragOver={handleDragOver} collisionDetection={rectIntersection}>
+      {/* 渲染 DroppableArea 和 DraggableItem */}
       {items.map((item) => (
-        <DroppableArea key={item.id} id={item.id} initialPosition={item.initialPosition} color={item.color}>
+        <DroppableArea key={item.id} id={item.id} position={item.position} isOver={overlappingItem === item.id}>
           <DraggableItem
-            key={item.id}
             id={item.id}
-            initialPosition={item.initialPosition}
             color={item.color}
-            isOver={overlappingItem === item.id} // 判斷是否發生碰撞
-            isDragging={item.id === overlappingItem} // 被抓取狀態
+            isOver={overlappingItem === item.id}
+            isDragging={item.id === overlappingItem}
           />
         </DroppableArea>
       ))}
-      
+
       {/* 碰撞提示 */}
-      {overlappingItem && <div style={{ position: 'absolute', top: 350 }}>Overlay detected with {overlappingItem}!</div>}
+      {overlappingItem && (
+        <div className="overlay">
+          Overlay detected with {overlappingItem}!
+        </div>
+      )}
     </DndContext>
   );
 };

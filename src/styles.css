@@ -1,0 +1,10 @@
+.draggable-item {
+    width: 100px;
+    height: 100px;
+    position: absolute;
+  }
+  
+  .overlay {
+    position: absolute;
+    top: 350px;
+  }
