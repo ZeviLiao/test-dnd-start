@@ -1,30 +1,62 @@
+body {
+  display: flex; /* Use Flexbox for centering */
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  height: 100vh; /* Full viewport height */
+  margin: 0; /* Remove default margin */
+  background-color: #f0f0f0; /* Optional: background color */
+}
+
 .drag-drop-container {
+  display: flex; /* Use Flexbox for layout */
+  justify-content: space-between; /* Space between draggable items and drop zones */
+  align-items: flex-start; /* Align items to the top */
+  width: 500px; /* Set fixed width */
+  background-color: white; /* Optional: background color for the container */
+  border: 1px solid #ccc; /* Optional: border for the container */
+  border-radius: 5px; /* Optional: rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: shadow effect */
+  padding: 20px; /* Optional: padding inside the container */
+}
+
+.drag-items {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 50px;
+  flex-direction: column; /* Column layout for draggable items */
+  margin-right: 20px; /* Space between items and zones */
 }
 
 .draggable-item {
-  width: 100px;
-  height: 100px;
-  margin: 20px;
-  text-align: center;
-  line-height: 100px;
-  border: 2px solid blue;
-  cursor: pointer;
+  padding: 10px;
+  margin: 5px;
+  background-color: lightblue; /* Item color */
+  cursor: grab; /* Change cursor on hover */
+  border: 1px solid #007bff; /* Optional: border for visibility */
+  border-radius: 5px; /* Optional: rounded corners */
+}
+
+.drop-zones {
+  display: flex;
+  flex-direction: column; /* Column layout for drop zones */
 }
 
 .drop-zone {
   width: 200px;
-  height: 200px;
+  height: 100px;
   display: flex;
   justify-content: center;
   align-items: center;
+  margin: 10px;
+  border: 3px dashed gray; /* Border style */
+  transition: border-color 0.3s; /* Smooth border transition */
+}
+
+.drop-zone:hover {
+  border-color: lightgreen; /* Change border color on hover */
 }
 
 .dropped-message {
-  margin-top: 20px;
-  font-size: 18px;
-  color: green;
+  margin-top: 20px; /* Space above the message */
+  font-weight: bold;
+  color: #333; /* Optional: message text color */
+  text-align: center; /* Center the message */
 }

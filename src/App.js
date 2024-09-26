@@ -1,13 +1,11 @@
 import React, { useState } from "react";
-import './App.css'; // Optional for adding styles
+import "./App.css"; // Optional for adding styles
 
 const DragAndDrop = () => {
-  const [dragging, setDragging] = useState(false);
-  const [droppedItem, setDroppedItem] = useState(null);
+  const [lastDroppedMessage, setLastDroppedMessage] = useState(""); // Store the latest drop message
 
   // Start dragging
   const handleDragStart = (e) => {
-    setDragging(true);
     e.dataTransfer.setData("text/plain", e.target.id); // Set drag data
   };
 
@@ -17,43 +15,72 @@ const DragAndDrop = () => {
   };
 
   // Handle drop event
-  const handleDrop = (e) => {
+  const handleDrop = (e, zone) => {
     e.preventDefault();
     const droppedData = e.dataTransfer.getData("text/plain");
-    setDroppedItem(droppedData); // Store the dropped data (item id in this case)
-    setDragging(false);
+    setLastDroppedMessage(`You dropped: ${droppedData} into ${zone}`); // Update the message
   };
-
   return (
-    <div className="drag-drop-container">
-      {/* Draggable items */}
-      <div 
-        id="drag1"
-        className="draggable-item"
-        draggable="true"
-        onDragStart={handleDragStart}
-        style={{ backgroundColor: dragging ? "lightgreen" : "lightblue" }}
-      >
-        Drag Me!
-      </div>
-
-      {/* Drop target */}
-      <div
-        className="drop-zone"
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-        style={{ border: dragging ? "3px dashed green" : "3px dashed gray" }}
-      >
-        Drop Here
-      </div>
-
-      {/* Display the dropped item */}
-      {droppedItem && (
-        <div className="dropped-message">
-          You dropped: {droppedItem}
+    <>
+      <div className="drag-drop-container">
+        {/* Left side for draggable items */}
+        <div className="drag-items">
+          <div
+            id="drag1"
+            className="draggable-item"
+            draggable="true"
+            onDragStart={handleDragStart}
+          >
+            Drag Item 1
+          </div>
+          <div
+            id="drag2"
+            className="draggable-item"
+            draggable="true"
+            onDragStart={handleDragStart}
+          >
+            Drag Item 2
+          </div>
+          <div
+            id="drag3"
+            className="draggable-item"
+            draggable="true"
+            onDragStart={handleDragStart}
+          >
+            Drag Item 3
+          </div>
         </div>
-      )}
-    </div>
+
+        {/* Right side for drop zones */}
+        <div className="drop-zones">
+          <div
+            id="zone1"
+            className="drop-zone"
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, "zone1")}
+          >
+            Drop Zone 1
+          </div>
+          <div
+            id="zone2"
+            className="drop-zone"
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, "zone2")}
+          >
+            Drop Zone 2
+          </div>
+          <div
+            id="zone3"
+            className="drop-zone"
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, "zone3")}
+          >
+            Drop Zone 3
+          </div>
+        </div>
+      </div>
+      <div className="dropped-message">{lastDroppedMessage}</div>
+    </>
   );
 };
 
