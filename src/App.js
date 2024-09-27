@@ -7,6 +7,16 @@ import {
 } from "@dnd-kit/core";
 import "./styles.css"; // Ensure you have a CSS file for styles
 
+// Helper function to check if drop is valid based on item type
+const isValidDrop = (draggedId, droppableId) => {
+  const draggedGroup = draggedId.split('-')[0];
+  const droppableGroup = droppableId.split('-')[0];
+
+  // Allow drop if the groups are different (item1-* can drop on item2-* and vice versa)
+  return (draggedGroup === "item1" && droppableGroup === "item2") ||
+         (draggedGroup === "item2" && droppableGroup === "item1");
+};
+
 // DraggableItem component
 const DraggableItem = ({ id, color, isOver, isDragging, zIndex }) => {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id });
@@ -78,22 +88,26 @@ const DroppableArea = ({
 
 const App = () => {
   const initialPositions = [
-    { id: "item1", color: "lightblue", position: { x: 50, y: 200 }, zIndex: 1 },
-    {
-      id: "item2",
-      color: "lightcoral",
-      position: { x: 300, y: 200 },
-      zIndex: 1,
-    },
+    // Vertical layout for item1-*
+    { id: "item1-1", color: "lightblue", position: { x: 50, y: 50 }, zIndex: 1 },
+    { id: "item1-2", color: "lightblue", position: { x: 50, y: 200 }, zIndex: 1 },
+    
+    // Vertical layout for item2-*
+    { id: "item2-1", color: "lightcoral", position: { x: 300, y: 50 }, zIndex: 1 },
+    { id: "item2-2", color: "lightcoral", position: { x: 300, y: 200 }, zIndex: 1 },
   ];
 
   const [items, setItems] = useState(initialPositions);
   const [overlappingItem, setOverlappingItem] = useState(null);
   const [draggingItem, setDraggingItem] = useState(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmedPair, setConfirmedPair] = useState({ from: null, to: null });
+  const [linkMessage, setLinkMessage] = useState(""); // For showing the link message
 
   const handleDragOver = (event) => {
     const { active, over } = event;
-    if (over && active.id !== over.id) {
+
+    if (over && active.id !== over.id && isValidDrop(active.id, over.id)) {
       setOverlappingItem(over.id);
     } else {
       setOverlappingItem(null);
@@ -101,15 +115,14 @@ const App = () => {
   };
 
   const handleDragEnd = (event) => {
-    // Reset zIndex after drag ends
-    const updatedItems = items.map((item) => ({
-      ...item,
-      zIndex: 1, // Reset all items to default zIndex
-    }));
+    const { active, over } = event;
 
-    setItems(updatedItems);
-    setOverlappingItem(null);
-    setDraggingItem(null);
+    if (over && isValidDrop(active.id, over.id)) {
+      setConfirmedPair({ from: active.id, to: over.id });
+      setShowConfirm(true);
+    } else {
+      resetDragStates();
+    }
   };
 
   const handleDragStart = (event) => {
@@ -126,36 +139,75 @@ const App = () => {
     setItems(updatedItems);
   };
 
+  const resetDragStates = () => {
+    const resetItems = items.map((item) => ({ ...item, zIndex: 1 }));
+    setItems(resetItems);
+    setOverlappingItem(null);
+    setDraggingItem(null);
+    setShowConfirm(false);
+  };
+
+  const handleConfirm = (confirm) => {
+    if (confirm) {
+      // If confirmed, swap the positions of the two items
+      const updatedItems = items.map((item) => {
+        if (item.id === confirmedPair.from) {
+          return { ...item, position: items.find((el) => el.id === confirmedPair.to).position };
+        } else if (item.id === confirmedPair.to) {
+          return { ...item, position: items.find((el) => el.id === confirmedPair.from).position };
+        }
+        return item;
+      });
+      setItems(updatedItems);
+      setLinkMessage(`${confirmedPair.from} is linked with ${confirmedPair.to}`); // Show success message
+    }
+    resetDragStates(); // Reset states after confirmation or cancellation
+  };
+
   return (
-    <DndContext
-      onDragEnd={handleDragEnd}
-      onDragOver={handleDragOver}
-      onDragStart={handleDragStart}
-      collisionDetection={rectIntersection}
-    >
-      {items.map((item) => (
-        <DroppableArea
-          key={item.id}
-          id={item.id}
-          position={item.position}
-          isOver={overlappingItem === item.id}
-          isDragging={draggingItem === item.id}
-          zIndex={item.zIndex} // Dynamic zIndex passed here
-        >
-          <DraggableItem
+    <div>
+      <DndContext
+        onDragEnd={handleDragEnd}
+        onDragOver={handleDragOver}
+        onDragStart={handleDragStart}
+        collisionDetection={rectIntersection}
+      >
+        {items.map((item) => (
+          <DroppableArea
+            key={item.id}
             id={item.id}
-            color={item.color}
+            position={item.position}
             isOver={overlappingItem === item.id}
             isDragging={draggingItem === item.id}
             zIndex={item.zIndex} // Dynamic zIndex passed here
-          />
-        </DroppableArea>
-      ))}
+          >
+            <DraggableItem
+              id={item.id}
+              color={item.color}
+              isOver={overlappingItem === item.id}
+              isDragging={draggingItem === item.id}
+              zIndex={item.zIndex} // Dynamic zIndex passed here
+            />
+          </DroppableArea>
+        ))}
+      </DndContext>
 
-      {overlappingItem && (
-        <div className="overlay">Overlay detected with {overlappingItem}!</div>
+      {/* Confirmation Dialog */}
+      {showConfirm && (
+        <div className="confirm-overlay">
+          <div className="confirm-dialog">
+            <p>
+              Confirm linking {confirmedPair.from} with {confirmedPair.to}?
+            </p>
+            <button onClick={() => handleConfirm(true)}>Yes</button>
+            <button onClick={() => handleConfirm(false)}>No</button>
+          </div>
+        </div>
       )}
-    </DndContext>
+
+      {/* Link success message */}
+      {linkMessage && <div className="link-message">{linkMessage}</div>}
+    </div>
   );
 };
 
