@@ -7,14 +7,20 @@ import {
 } from "@dnd-kit/core";
 import "./styles.css"; // Ensure you have a CSS file for styles
 
+// Define the valid drop relationships
+const validDropGroups = {
+  item1: ["item2"],  // item1 can drop only on item2
+  item2: ["item1", "item3"], // item2 can drop on item1 or item3
+  item3: ["item2"],  // item3 can drop only on item2
+};
+
 // Helper function to check if drop is valid based on item type
 const isValidDrop = (draggedId, droppableId) => {
   const draggedGroup = draggedId.split('-')[0];
   const droppableGroup = droppableId.split('-')[0];
 
-  // Allow drop if the groups are different (item1-* can drop on item2-* and vice versa)
-  return (draggedGroup === "item1" && droppableGroup === "item2") ||
-         (draggedGroup === "item2" && droppableGroup === "item1");
+  // Check if the droppableGroup is in the array of valid drops for the draggedGroup
+  return validDropGroups[draggedGroup]?.includes(droppableGroup);
 };
 
 // DraggableItem component
@@ -91,10 +97,14 @@ const App = () => {
     // Vertical layout for item1-*
     { id: "item1-1", color: "lightblue", position: { x: 50, y: 50 }, zIndex: 1 },
     { id: "item1-2", color: "lightblue", position: { x: 50, y: 200 }, zIndex: 1 },
-    
+
     // Vertical layout for item2-*
     { id: "item2-1", color: "lightcoral", position: { x: 300, y: 50 }, zIndex: 1 },
     { id: "item2-2", color: "lightcoral", position: { x: 300, y: 200 }, zIndex: 1 },
+
+    // Vertical layout for item3-*
+    { id: "item3-1", color: "lightgreen", position: { x: 500, y: 50 }, zIndex: 1 },
+    { id: "item3-2", color: "lightgreen", position: { x: 500, y: 200 }, zIndex: 1 },
   ];
 
   const [items, setItems] = useState(initialPositions);
