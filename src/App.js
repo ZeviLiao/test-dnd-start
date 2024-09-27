@@ -34,6 +34,7 @@ const DraggableItem = ({ id, color, isOver, isDragging, zIndex }) => {
     cursor: isDragging ? "grabbing" : "grab",
     zIndex, // Use dynamic zIndex
     transition: !isDragging ? "transform 0.3s ease" : "none",
+    position: "relative", // Set position relative for icon positioning
   };
 
   return (
@@ -45,6 +46,19 @@ const DraggableItem = ({ id, color, isOver, isDragging, zIndex }) => {
       style={style}
     >
       {id}
+      {(isOver!==null && isDragging) && (
+        <span
+          style={{
+            position: "absolute",
+            top: -10, // Adjust the position of the icon as needed
+            right: -10,
+            fontSize: "24px",
+            color: "green",
+          }}
+        >
+           🔗 {/* Link Icon */}
+        </span>
+      )}
     </div>
   );
 };
@@ -194,7 +208,7 @@ const App = () => {
             <DraggableItem
               id={item.id}
               color={item.color}
-              isOver={overlappingItem === item.id}
+              isOver={overlappingItem && overlappingItem === item.id}
               isDragging={draggingItem === item.id}
               zIndex={item.zIndex} // Dynamic zIndex passed here
             />
