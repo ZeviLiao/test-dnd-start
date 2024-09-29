@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Draggable Divs with Placeholder</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: space-around;
+      height: 100vh;
+      align-items: center;
+    }
+
+    .container {
+      position: relative;
+      width: 100px;
+      height: 100px;
+    }
+
+    .draggable {
+      width: 100px;
+      height: 100px;
+      background-color: lightblue;
+      position: absolute;
+      cursor: grab;
+      border: 2px solid black;
+      transition: background-color 0.3s, border 0.3s; /* 原有 transition */
+    }
+
+    .placeholder {
+      width: 100px;
+      height: 100px;
+      background-color: lightgray;
+      border: 2px dashed gray;
+      position: absolute;
+      top: 0;
+      left: 0;
+      visibility: hidden;
+    }
+
+    .overlay {
+      background-color: rgba(0, 0, 255, 0.5);
+      border: 2px dashed black;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div id="box1" class="draggable"></div>
+    <div id="placeholder1" class="placeholder"></div>
+  </div>
+
+  <div class="container">
+    <div id="box2" class="draggable"></div>
+    <div id="placeholder2" class="placeholder"></div>
+  </div>
+
+  <script>
+    const boxes = document.querySelectorAll('.draggable');
+    let activeBox = null;
+    let startX = 0, startY = 0;
+    let initialMouseX = 0, initialMouseY = 0;
+
+    boxes.forEach(box => {
+      box.addEventListener('mousedown', dragStart);
+    });
+
+    function dragStart(e) {
+      activeBox = e.target;
+      
+      // 記錄初始的位置
+      startX = activeBox.offsetLeft;
+      startY = activeBox.offsetTop;
+
+      // 記錄鼠標的位置
+      initialMouseX = e.clientX;
+      initialMouseY = e.clientY;
+
+      // 停止 transition 動畫並顯示佔位符
+      activeBox.style.transition = 'none';
+      activeBox.classList.add('overlay');
+      activeBox.nextElementSibling.style.visibility = "visible";
+
+      document.addEventListener('mousemove', dragMove);
+      document.addEventListener('mouseup', dragEnd);
+    }
+
+    function dragMove(e) {
+      if (!activeBox) return;
+
+      const dx = e.clientX - initialMouseX; // 鼠標 x 方向的移動距離
+      const dy = e.clientY - initialMouseY; // 鼠標 y 方向的移動距離
+
+      // 更新 box 的位置
+      activeBox.style.left = `${startX + dx}px`;
+      activeBox.style.top = `${startY + dy}px`;
+
+      checkCollision(activeBox);
+    }
+
+    function dragEnd() {
+      // 拖放結束，回到初始位置，並恢復 transition 動畫
+      activeBox.style.left = `${startX}px`;
+      activeBox.style.top = `${startY}px`;
+      activeBox.style.transition = 'left 0.3s, top 0.3s';  // 更改回到原位的動畫時間
+
+      // 確保動畫結束後再隱藏佔位符並重置樣式
+      activeBox.addEventListener('transitionend', function() {
+        activeBox.nextElementSibling.style.visibility = "hidden";  // 隱藏佔位符
+        resetBoxStyle(activeBox);  // 重置 box 樣式
+      }, { once: true });
+
+      // 移除事件監聽
+      document.removeEventListener('mousemove', dragMove);
+      document.removeEventListener('mouseup', dragEnd);
+      activeBox = null;
+
+      // 恢復鼠標樣式
+      document.body.style.cursor = 'default';
+    }
+
+    function checkCollision(draggedBox) {
+      let isColliding = false;
+
+      boxes.forEach(box => {
+        if (box !== draggedBox) {
+          const draggedRect = draggedBox.getBoundingClientRect();
+          const boxRect = box.getBoundingClientRect();
+
+          if (
+            draggedRect.left < boxRect.right &&
+            draggedRect.right > boxRect.left &&
+            draggedRect.top < boxRect.bottom &&
+            draggedRect.bottom > boxRect.top
+          ) {
+            isColliding = true;
+          }
+        }
+      });
+
+      // 如果碰撞則顯示加號鼠標
+      if (isColliding) {
+        draggedBox.style.cursor = 'copy';  // 只在被拖动的 box 上更改鼠标样式
+      } else {
+        draggedBox.style.cursor = 'grabbing';  // 拖動時的默认樣式
+      }
+    }
+
+    // 重置 box 樣式
+    function resetBoxStyle(box) {
+      box.style.left = '';  // 重置位置
+      box.style.top = '';  // 重置位置
+      box.style.transition = '';  // 移除 transition 動畫
+      box.classList.remove('overlay');  // 移除 overlay 樣式
+      box.style.cursor = 'grab';  // 恢復 grab 樣式
+    }
+  </script>
+</body>
+</html>

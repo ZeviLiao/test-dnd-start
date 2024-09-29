@@ -1,63 +1,24 @@
-.draggable-item {
-    width: 100px;
-    height: 100px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    user-select: none; /* 防止拖动时选择文本 */
-  }
-  
-  .overlay {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    color: white;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 10px;
-    border-radius: 5px;
-  }
-  
-  .link-message {
-    margin-top: 20px;
-    padding: 10px;
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-    border-radius: 5px;
-    font-weight: bold;
-    width: 100%;
-    text-align: center;
-  }
-  
-  .confirm-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .confirm-dialog {
-    background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .confirm-dialog p {
-    margin-bottom: 20px;
-  }
-  
-  .confirm-dialog button {
-    margin: 10px;
-    padding: 10px 20px;
-    cursor: pointer;
-  }
-  
+.confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.confirm-dialog {
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.link-message {
+  margin-top: 20px;
+  font-weight: bold;
+  color: green;
+}
