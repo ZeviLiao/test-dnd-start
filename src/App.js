@@ -7,21 +7,9 @@ import {
 } from "@dnd-kit/core";
 import "./styles.css"; // Ensure you have a CSS file for styles
 
-// Define the valid drop relationships
-const validDropGroups = {
-  item1: ["item2"], // item1 can drop only on item2
-  item2: ["item1", "item3"], // item2 can drop on item1 or item3
-  item3: ["item2"], // item3 can drop only on item2
-};
+// Helper function to allow any drop except onto itself
+const isValidDrop = (draggedId, droppableId) => draggedId !== droppableId;
 
-// Helper function to check if drop is valid based on item type
-const isValidDrop = (draggedId, droppableId) => {
-  const draggedGroup = draggedId.split("-")[0];
-  const droppableGroup = droppableId.split("-")[0];
-  return validDropGroups[draggedGroup]?.includes(droppableGroup);
-};
-
-// DraggableDroppableItem component
 const DraggableDroppableItem = ({
   id,
   color,
@@ -61,7 +49,7 @@ const DraggableDroppableItem = ({
         onMouseDown={onDragStart} // Track the drag start
       >
         {id}
-        {isOver!==null && isDragging && (
+        {isOver !== null && isDragging && (
           <span
             style={{
               position: "absolute",
@@ -143,13 +131,8 @@ const App = () => {
   const handleDragOver = (event) => {
     const { active, over } = event;
 
-    // Ensure active and over are defined before checking their IDs
-    if (
-      active &&
-      over &&
-      active.id !== over.id &&
-      isValidDrop(active.id, over.id)
-    ) {
+    // Ensure active and over are defined and are not the same item
+    if (active && over && active.id !== over.id && isValidDrop(active.id, over.id)) {
       setOverlappingItem(over.id);
     } else {
       setOverlappingItem(null);
@@ -159,7 +142,7 @@ const App = () => {
   const handleDragEnd = (event) => {
     const { active, over } = event;
 
-    // Ensure active and over are defined before accessing their IDs
+    // Ensure active and over are defined and valid
     if (active && over && isValidDrop(active.id, over.id)) {
       setConfirmedPair({ from: active.id, to: over.id });
       setShowConfirm(true);
